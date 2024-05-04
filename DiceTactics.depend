@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1714426124 source:c:\users\gabri\onedrive\documentos\programação c++\dicetactics\main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<time.h>
+
+1714787478 source:c:\users\gabri\onedrive\documentos\programacaoc++\dicetactics\main.c
+	<stdio.h>
+	<stdlib.h>
+	<locale.h>
+	<time.h>
+	<stdbool.h>
+
