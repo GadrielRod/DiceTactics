@@ -4,24 +4,6 @@
 #include <time.h>
 #include <stdbool.h>
 
-// Função para exibir o menu principal
-void exibirMenu() {
-    printf("\033[1;36m"); // Cor ciano para o título
-    printf("\n\t\t=== Dice Tactics ===\n\n");
-    printf("\033[0m"); // Resetar a cor
-
-    printf("\033[1;33m"); // Cor amarela para as opções
-    printf("\t1. Iniciar Jogo\n");
-    printf("\t2. Escores\n");
-    printf("\t3. Regras\n");
-    printf("\t4. Sair\n");
-    printf("\033[0m"); // Resetar a cor
-
-    printf("\033[1;33m"); // Cor amarela para a instrução
-    printf("\tEscolha uma opção: ");
-    printf("\033[0m"); // Resetar a cor
-}
-
 // Função para exibir o tabuleiro com os números disponíveis
 void displayBoard(bool numbers[]) {
     printf("  -------------\n");
@@ -30,9 +12,9 @@ void displayBoard(bool numbers[]) {
             printf(" |-------------|\n");
         }
         if (numbers[i]) {
-            printf(" | %d ", i);
+            printf(" | \033[1;32m%d \033[1;0m", i);
         } else {
-            printf(" | X ");
+            printf(" | \033[1;31mX \033[1;0m");
         }
         if (i == 3 || i == 6 || i == 9) {
             printf("|\n");
@@ -56,7 +38,67 @@ bool isGameOver(bool numbers[], int targetSum) {
     return true;
 }
 
-// Função para jogar o jogo
+// Função para um jogador jogar
+void jogarJogador(int jogador, bool numbers[]) {
+    int roll1 = rand() % 6 + 1;
+    int roll2 = rand() % 6 + 1;
+    int targetSum = roll1 + roll2;
+    printf("Jogador %d, Dados rolados: %d + %d = %d\n", jogador, roll1, roll2, targetSum);
+
+    displayBoard(numbers);
+
+    bool validInput = false;
+    int input1 = -1, input2 = -1;
+
+    while (!validInput) {
+        printf("Jogador %d, selecione o primeiro número para fechar: ", jogador);
+        if (scanf("%d", &input1) != 1) {
+            printf("Entrada inválida. Insira um número inteiro.\n");
+            // Limpar o buffer de entrada
+            while (getchar() != '\n');
+            continue;
+        }
+        if (input1 == 0) {
+            printf("Você não pode pular a seleção do primeiro número.\n");
+        } else if (numbers[input1]) {
+            if (input1 == targetSum) {
+                numbers[input1] = false;
+                validInput = true;
+                break; // Se a primeira casa fecha a soma, não precisa escolher a segunda casa
+            }
+            bool otherAvailable = false;
+            for (int i = 1; i <= 9; i++) {
+                if (numbers[i] && i != input1 && (numbers[targetSum - input1] || numbers[targetSum - i])) {
+                    otherAvailable = true;
+                    break;
+                }
+            }
+            if (!otherAvailable) {
+                printf("Não há outra casa disponível que feche a soma dos dados. Jogador %d perde!\n", jogador);
+                printf("Game over! O Jogador %d ganhou.\n", 3 - jogador); // O outro jogador é declarado vencedor
+                return;
+            }
+            printf("Jogador %d, escolha o segundo número para fechar: ", jogador);
+            if (scanf("%d", &input2) != 1) {
+                printf("Entrada inválida. Insira um número inteiro.\n");
+                // Limpar o buffer de entrada
+                while (getchar() != '\n');
+                continue;
+            }
+            if ((input2 == 0 && numbers[targetSum - input1]) || (input2 != 0 && (numbers[input2] && (input1 + input2 == targetSum)))) {
+                numbers[input1] = false;
+                if (input2 != 0) numbers[input2] = false;
+                validInput = true;
+            } else {
+                printf("Os números selecionados não correspondem à soma dos dados.\n");
+            }
+        } else {
+            printf("Número inválido. Tente novamente.\n");
+        }
+    }
+}
+
+// Função para um jogador jogar
 void jogar() {
     bool numbers[10]; // Array para armazenar os números disponíveis
     srand(time(NULL)); // Seed para geração de números aleatórios
@@ -68,76 +110,23 @@ void jogar() {
 
     // Loop principal do jogo
     while (true) {
-        int roll1 = rand() % 6 + 1;
-        int roll2 = rand() % 6 + 1;
-        int targetSum = roll1 + roll2;
-        printf("Dados rolados: %d + %d = %d\n", roll1, roll2, targetSum);
-
-        displayBoard(numbers);
-
-        bool validInput = false;
-        int input1 = -1, input2 = -1;
-
-        while (!validInput) {
-            printf("Selecione o primeiro número para fechar: ");
-            if (scanf("%d", &input1) != 1) {
-                printf("Entrada inválida. Insira um número inteiro.\n");
-                // Limpar o buffer de entrada
-                while (getchar() != '\n');
-                continue;
-            }
-            if (input1 == 0) {
-                printf("Você não pode pular a seleção do primeiro número.\n");
-            } else if (numbers[input1]) {
-                if (input1 == targetSum || numbers[targetSum - input1]) {
-                    if (input1 == targetSum) {
-                        numbers[input1] = false;
-                        validInput = true;
-                    } else {
-                        printf("Escolha o segundo número para fechar: ");
-                        if (scanf("%d", &input2) != 1) {
-                            printf("Entrada inválida. Insira um número inteiro.\n");
-                            // Limpar o buffer de entrada
-                            while (getchar() != '\n');
-                            continue;
-                        }
-                        if (input2 == 0) {
-                            printf("Você não pode pular a seleção do segundo número.\n");
-                        } else if ((numbers[targetSum - input1] && input2 == targetSum - input1) || (numbers[input2] && input1 + input2 == targetSum)) {
-                            numbers[input1] = false;
-                            numbers[input2] = false;
-                            validInput = true;
-                        } else {
-                            printf("Os números selecionados não correspondem à soma dos dados.\n");
-                        }
-                    }
-                } else {
-                    printf("Os números selecionados não correspondem à soma dos dados.\n");
-                }
-            } else {
-                printf("Número inválido. Tente novamente.\n");
-            }
-        }
+        // Jogador 1
+        jogarJogador(1, numbers);
 
         // Verifica se o jogo terminou
-        if (isGameOver(numbers, targetSum)) {
+        if (isGameOver(numbers, 7)) {
             displayBoard(numbers);
-            printf("Game over! Você não pode selecionar nenhum número para igualar a soma da próxima jogada.\n");
-            printf("Você perdeu!\n");
+            printf("Game over! O Jogador 2 ganhou.\n");
             return;
         }
 
-        // Verifica se o jogador ganhou o jogo
-        bool allNumbersClosed = true;
-        for (int i = 1; i <= 9; i++) {
-            if (numbers[i]) {
-                allNumbersClosed = false;
-                break;
-            }
-        }
-        if (allNumbersClosed) {
+        // Jogador 2
+        jogarJogador(2, numbers);
+
+        // Verifica se o jogo terminou
+        if (isGameOver(numbers, 7)) {
             displayBoard(numbers);
-            printf("Parabéns! Você fechou todos os números. Você ganhou!\n");
+            printf("Game over! O Jogador 1 ganhou.\n");
             return;
         }
     }
@@ -164,6 +153,24 @@ void mostrarRegras() {
     printf("\nPressione Enter para voltar ao menu principal...");
     while (getchar() != '\n');
     getchar(); // Limpar o buffer do teclado
+}
+
+// Função para exibir o menu principal
+void exibirMenu() {
+    printf("\033[1;36m"); // Cor ciano para o título
+    printf("\n\t\t=== Dice Tactics ===\n\n");
+    printf("\033[0m"); // Resetar a cor
+
+    printf("\033[1;33m"); // Cor amarela para as opções
+    printf("\t1. Iniciar Jogo\n");
+    printf("\t2. Escores\n");
+    printf("\t3. Regras\n");
+    printf("\t4. Sair\n");
+    printf("\033[0m"); // Resetar a cor
+
+    printf("\033[1;33m"); // Cor amarela para a instrução
+    printf("\tEscolha uma opção: ");
+    printf("\033[0m"); // Resetar a cor
 }
 
 int main() {
