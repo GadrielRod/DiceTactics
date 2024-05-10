@@ -3,6 +3,13 @@
 #include <locale.h>
 #include <time.h>
 #include <stdbool.h>
+#include <string.h> // Adicionando para lidar com strings
+
+// Estrutura para armazenar informações de cada jogador
+typedef struct {
+    char nome[50]; // Nome do jogador
+    int pontos;    // Pontuação do jogador
+} Jogador;
 
 // Função para exibir o tabuleiro com os números disponíveis
 void displayBoard(bool numbers[]) {
@@ -39,11 +46,11 @@ bool isGameOver(bool numbers[], int targetSum) {
 }
 
 // Função para um jogador jogar
-void jogarJogador(int jogador, bool numbers[]) {
+void jogarJogador(Jogador jogador, bool numbers[]) {
     int roll1 = rand() % 6 + 1;
     int roll2 = rand() % 6 + 1;
     int targetSum = roll1 + roll2;
-    printf("Jogador %d, Dados rolados: %d + %d = %d\n", jogador, roll1, roll2, targetSum);
+    printf("%s, Dados rolados: %d + %d = %d\n", jogador.nome, roll1, roll2, targetSum);
 
     displayBoard(numbers);
 
@@ -51,7 +58,7 @@ void jogarJogador(int jogador, bool numbers[]) {
     int input1 = -1, input2 = -1;
 
     while (!validInput) {
-        printf("Jogador %d, selecione o primeiro número para fechar: ", jogador);
+        printf("%s, selecione o primeiro número para fechar: ", jogador.nome);
         if (scanf("%d", &input1) != 1) {
             printf("Entrada inválida. Insira um número inteiro.\n");
             // Limpar o buffer de entrada
@@ -74,11 +81,11 @@ void jogarJogador(int jogador, bool numbers[]) {
                 }
             }
             if (!otherAvailable) {
-                printf("Não há outra casa disponível que feche a soma dos dados. Jogador %d perde!\n", jogador);
-                printf("Game over! O Jogador %d ganhou.\n", 3 - jogador); // O outro jogador é declarado vencedor
+                printf("Não há outra casa disponível que feche a soma dos dados. %s perde!\n", jogador.nome);
+                printf("Game over! O outro jogador ganhou.\n"); // O outro jogador é declarado vencedor
                 return;
             }
-            printf("Jogador %d, escolha o segundo número para fechar: ", jogador);
+            printf("%s, escolha o segundo número para fechar: ", jogador.nome);
             if (scanf("%d", &input2) != 1) {
                 printf("Entrada inválida. Insira um número inteiro.\n");
                 // Limpar o buffer de entrada
@@ -99,7 +106,7 @@ void jogarJogador(int jogador, bool numbers[]) {
 }
 
 // Função para um jogador jogar
-void jogar() {
+void jogar(Jogador jogador1, Jogador jogador2) {
     bool numbers[10]; // Array para armazenar os números disponíveis
     srand(time(NULL)); // Seed para geração de números aleatórios
 
@@ -111,22 +118,22 @@ void jogar() {
     // Loop principal do jogo
     while (true) {
         // Jogador 1
-        jogarJogador(1, numbers);
+        jogarJogador(jogador1, numbers);
 
         // Verifica se o jogo terminou
         if (isGameOver(numbers, 7)) {
             displayBoard(numbers);
-            printf("Game over! O Jogador 2 ganhou.\n");
+            printf("Game over! %s ganhou.\n", jogador1.nome);
             return;
         }
 
         // Jogador 2
-        jogarJogador(2, numbers);
+        jogarJogador(jogador2, numbers);
 
         // Verifica se o jogo terminou
         if (isGameOver(numbers, 7)) {
             displayBoard(numbers);
-            printf("Game over! O Jogador 1 ganhou.\n");
+            printf("Game over! %s ganhou.\n", jogador2.nome);
             return;
         }
     }
@@ -136,7 +143,7 @@ void jogar() {
 void mostrarRegras() {
     printf("\033[1;34m"); // Cor azul para as regras
     printf("\n\t\t\t\t\t\tRegras do Jogo - Dice Tactics\v\n");
-    printf("1. O jogo é composto por 2 jogadores: Jogador 1 e Jogador 2.\n");
+    printf("1. O jogo é composto por 2 jogadores.\n");
     printf("2. O jogo prossegue até que um dos jogadores alcance um mínimo de 7 pontos.\n");
     printf("3. Cada turno consiste em lançar dois dados D6 e somar os valores obtidos.\n");
     printf("4. Existem nove 'casas' numeradas de 1 a 9.\n");
@@ -187,7 +194,15 @@ int main() {
         switch (escolha) {
             case 1:
                 // Iniciar o jogo
-                jogar();
+                {
+                    Jogador jogador1, jogador2;
+                    printf("Digite o nome do Jogador 1: ");
+                    scanf("%s", jogador1.nome);
+                    printf("Digite o nome do Jogador 2: ");
+                    scanf("%s", jogador2.nome);
+                    jogador1.pontos = jogador2.pontos = 0;
+                    jogar(jogador1, jogador2);
+                }
                 break;
             case 2:
                 printf("\nMostrando escores...\n");

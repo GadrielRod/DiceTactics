@@ -5,10 +5,11 @@
 	<stdbool.h>
 	<time.h>
 
-1715166857 source:c:\users\gabri\onedrive\documentos\programacaoc++\dicetactics\main.c
+1715342533 source:c:\users\gabri\onedrive\documentos\programacaoc++\dicetactics\main.c
 	<stdio.h>
 	<stdlib.h>
 	<locale.h>
 	<time.h>
 	<stdbool.h>
+	<string.h>
 
